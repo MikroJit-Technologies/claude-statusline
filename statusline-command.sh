@@ -164,7 +164,7 @@ parts+=("$repo_part")
 
 [ -n "$five_pct" ] && parts+=("$(progress_bar "$five_pct" "5h:" "")")
 [ -n "$week_pct" ] && parts+=("$(progress_bar "$week_pct" "7d:" "")")
-[ -n "$ctx_pct" ]  && parts+=("$(progress_bar "$ctx_pct"  "ctx:" "")")
+[ -n "$ctx_pct" ]  && parts+=("$(progress_bar "$ctx_pct"  "🅰:" "")")
 
 parts+=("$(printf '%b' "${C_TIME}$(date +%H:%M)${R}")")
 
