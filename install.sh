@@ -40,9 +40,14 @@ if [ -f "$SETTINGS" ]; then
     # inject before closing }
     if command -v jq >/dev/null 2>&1; then
       tmp=$(mktemp)
-      jq '. + {"statusLine": {"type": "command","command": "bash '"$DEST"'"}}' \
-        "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
-      echo "✓ patched $SETTINGS"
+      if jq '. + {"statusLine": {"type": "command","command": "bash '"$DEST"'"}}' \
+           "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"; then
+        echo "✓ patched $SETTINGS"
+      else
+        rm -f "$tmp"
+        echo "⚠  could not patch $SETTINGS — add manually:"
+        echo "   $SNIPPET"
+      fi
     else
       echo ""
       echo "Add to $SETTINGS manually:"

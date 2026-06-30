@@ -46,7 +46,7 @@ five_pct=$(json_get '.rate_limits.five_hour.used_percentage')
 week_pct=$(json_get '.rate_limits.seven_day.used_percentage')
 
 # fallback: derive from .quota if rate_limits absent
-if [ -z "$five_pct" ] && [ -z "$week_pct" ] && [ "$HAS_JQ" -eq 1 ]; then
+if [ -z "$week_pct" ] && [ "$HAS_JQ" -eq 1 ]; then
   quota_rem=$(jq -r '
     (.quota // {}) | to_entries |
     map(select(.value.remaining_fraction != null)) |
@@ -59,46 +59,6 @@ fi
 # ── OS detection ─────────────────────────────────────────────
 IS_WIN=0
 case "$OSTYPE" in msys*|cygwin*|mingw*) IS_WIN=1 ;; esac
-
-# ── Token counts (cached 60s) ─────────────────────────────────
-CACHE_FILE="${TMPDIR:-${TEMP:-/tmp}}/.claude_token_cache"
-now_s=$(date +%s)
-cache_vals=""
-
-if [ -f "$CACHE_FILE" ]; then
-  cache_ts=$(awk 'NR==1{print $1}' "$CACHE_FILE" 2>/dev/null)
-  age=$((now_s - ${cache_ts:-0}))
-  [ "${age:-999}" -le 60 ] && \
-    cache_vals=$(awk 'NR==1{$1=""; print substr($0,2)}' "$CACHE_FILE" 2>/dev/null)
-fi
-
-if [ -z "$cache_vals" ] && [ "$HAS_JQ" -eq 1 ]; then
-  since_5h=$((now_s - 5*3600))
-  since_7d=$((now_s - 7*86400))
-  jsonl_files=$(find ~/.claude/projects -name "*.jsonl" 2>/dev/null | head -200)
-  if [ -n "$jsonl_files" ]; then
-    cache_vals=$(printf '%s\n' "$jsonl_files" | xargs cat 2>/dev/null \
-      | jq -rn --argjson s5h "$since_5h" --argjson s7d "$since_7d" '
-          def fmt(n): "\(n)" | [scan(".{1,3}(?=(?:.{3})*$)")] | join(",");
-          [inputs | select(.message.usage != null) | {
-            ts: (.timestamp | gsub("\\.[0-9]+Z$";"Z") | try fromdateiso8601 catch 0),
-            t:  ((.message.usage.input_tokens               // 0) +
-                 (.message.usage.output_tokens              // 0) +
-                 (.message.usage.cache_creation_input_tokens // 0) +
-                 (.message.usage.cache_read_input_tokens    // 0))
-          }] | {
-            h5:  (map(select(.ts >= $s5h) | .t) | add // 0),
-            d7:  (map(select(.ts >= $s7d) | .t) | add // 0),
-            all: (map(.t) | add // 0)
-          } | "\(fmt(.h5)) \(fmt(.d7)) \(fmt(.all))"
-        ' 2>/dev/null)
-  fi
-  printf '%s %s\n' "$now_s" "${cache_vals:-0 0 0}" > "$CACHE_FILE"
-fi
-
-tok_5h=$(printf '%s' "$cache_vals" | awk '{print $1}')
-tok_7d=$(printf '%s' "$cache_vals" | awk '{print $2}')
-tok_all=$(printf '%s' "$cache_vals" | awk '{print $3}')
 
 # ── Host (trim long machine names) ───────────────────────────
 if [ "$IS_WIN" -eq 1 ]; then
