@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y jq
+
+      - name: Install jq (macOS)
+        if: runner.os == 'macOS'
+        run: brew install jq
+
+      - name: Syntax check
+        run: bash -n statusline-command.sh
+
+      - name: Run — no data
+        run: echo '{}' | bash statusline-command.sh
+
+      - name: Run — full payload with rate_limits
+        run: |
+          echo '{
+            "model": {"display_name": "Claude Sonnet 4.6"},
+            "context_window": {"used_percentage": 42},
+            "rate_limits": {
+              "five_hour": {"used_percentage": 11},
+              "seven_day": {"used_percentage": 22}
+            },
+            "workspace": {
+              "current_dir": "${{ github.workspace }}",
+              "repo": {"owner": "MikroJit-Technologies", "name": "claude-statusline"}
+            }
+          }' | bash statusline-command.sh
+
+      - name: Run — quota fallback (no rate_limits)
+        run: |
+          echo '{
+            "model": {"display_name": "Claude Sonnet 4.6"},
+            "context_window": {"used_percentage": 63},
+            "quota": {"sonnet": {"remaining_fraction": 0.75}}
+          }' | bash statusline-command.sh
+
+      - name: install.sh dry-run
+        run: bash install.sh
