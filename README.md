@@ -4,6 +4,7 @@
 
 <br/>
 
+[![CI](https://img.shields.io/github/actions/workflow/status/MikroJit-Technologies/claude-statusline/test.yml?style=flat-square&label=CI&logo=githubactions&logoColor=white)](https://github.com/MikroJit-Technologies/claude-statusline/actions)
 [![Shell](https://img.shields.io/badge/Shell-bash-4EAA25?style=flat-square&logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey?style=flat-square)](https://github.com/MikroJit-Technologies/claude-statusline)
 [![License](https://img.shields.io/github/license/MikroJit-Technologies/claude-statusline?style=flat-square&color=yellow)](LICENSE)
