@@ -13,13 +13,14 @@ command -v awk >/dev/null 2>&1 || missing+=("awk")
 
 if [ ${#missing[@]} -gt 0 ]; then
   echo "⚠  Missing: ${missing[*]}"
-  if command -v brew >/dev/null 2>&1; then
-    echo "   brew install ${missing[*]}"
-  elif command -v apt-get >/dev/null 2>&1; then
-    echo "   sudo apt-get install ${missing[*]}"
-  elif command -v dnf >/dev/null 2>&1; then
-    echo "   sudo dnf install ${missing[*]}"
-  fi
+  case "$OSTYPE" in
+    msys*|cygwin*|mingw*)
+      echo "   choco install ${missing[*]}" ;;
+    darwin*)
+      echo "   brew install ${missing[*]}" ;;
+    *)
+      echo "   sudo apt-get install ${missing[*]}  # or dnf/pacman" ;;
+  esac
   echo ""
 fi
 
