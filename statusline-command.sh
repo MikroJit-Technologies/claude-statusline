@@ -120,7 +120,7 @@ tok_7d_raw=$( printf '%s' "$cache_vals" | awk '{print $5}')
 tok_raw=$(    printf '%s' "$cache_vals" | awk '{print $6}')
 
 # ── host / model / git ───────────────────────────────────────
-host="${USER}@$(hostname -s)"
+host="${USER}@$(hostname -s | cut -d- -f1,2)"
 model=$(json_get '.model.display_name // .model.id')
 case "$model" in
   Claude\ *) model="${model#Claude }" ;;
