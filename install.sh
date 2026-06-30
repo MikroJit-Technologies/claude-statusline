@@ -7,6 +7,11 @@ mkdir -p "$HOME/.claude"
 cp "$REPO_DIR/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 chmod +x "$HOME/.claude/statusline-command.sh"
 
-echo "installed → $HOME/.claude/statusline-command.sh"
-echo "add to ~/.claude/settings.json:"
-echo '  "statusCommand": "~/.claude/statusline-command.sh"'
+echo "✓ installed → $HOME/.claude/statusline-command.sh"
+echo ""
+echo "Add to ~/.claude/settings.json:"
+echo ""
+echo '  "statusLine": {'
+echo '    "type": "command",'
+echo "    \"command\": \"bash $HOME/.claude/statusline-command.sh\""
+echo '  }'
