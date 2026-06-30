@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Claude Code statusline — macOS + Linux compatible
+# Claude Code statusline — macOS + Linux + Windows (Git Bash / WSL) compatible
 
 input=$(cat)
 
@@ -56,8 +56,12 @@ if [ -z "$five_pct" ] && [ -z "$week_pct" ] && [ "$HAS_JQ" -eq 1 ]; then
     week_pct=$(awk -v r="$quota_rem" 'BEGIN{printf "%.0f", (1-r)*100}')
 fi
 
+# ── OS detection ─────────────────────────────────────────────
+IS_WIN=0
+case "$OSTYPE" in msys*|cygwin*|mingw*) IS_WIN=1 ;; esac
+
 # ── Token counts (cached 60s) ─────────────────────────────────
-CACHE_FILE="${TMPDIR:-/tmp}/.claude_token_cache"
+CACHE_FILE="${TMPDIR:-${TEMP:-/tmp}}/.claude_token_cache"
 now_s=$(date +%s)
 cache_vals=""
 
@@ -97,10 +101,15 @@ tok_7d=$(printf '%s' "$cache_vals" | awk '{print $2}')
 tok_all=$(printf '%s' "$cache_vals" | awk '{print $3}')
 
 # ── Host (trim long machine names) ───────────────────────────
-_hn=$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo "localhost")
-_parts=$(printf '%s' "$_hn" | awk -F- '{print NF}')
-[ "$_parts" -gt 2 ] && _hn=$(printf '%s' "$_hn" | cut -d- -f1,2)
-host="${USER:-$(id -un)}@${_hn}"
+if [ "$IS_WIN" -eq 1 ]; then
+  _hn="${COMPUTERNAME:-$(hostname 2>/dev/null || echo "windows")}"
+  host="${USERNAME:-${USER:-user}}@${_hn}"
+else
+  _hn=$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo "localhost")
+  _parts=$(printf '%s' "$_hn" | awk -F- '{print NF}')
+  [ "$_parts" -gt 2 ] && _hn=$(printf '%s' "$_hn" | cut -d- -f1,2)
+  host="${USER:-$(id -un)}@${_hn}"
+fi
 
 # ── Model ─────────────────────────────────────────────────────
 model=$(json_get '.model.display_name // .model.id')
