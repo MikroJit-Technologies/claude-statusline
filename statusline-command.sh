@@ -54,23 +54,20 @@ progress_bar() {
 TOK_MAX=100000000   # fallback if rate_limits not yet available
 
 # ── rate limit data ──────────────────────────────────────────
-# Get context window usage percentage
 ctx_pct=$(json_get '.context_window.used_percentage')
+five_pct=$(json_get '.rate_limits.five_hour.used_percentage')
+week_pct=$(json_get '.rate_limits.seven_day.used_percentage')
 
-# Get weekly model quota usage percentage
-model_quota_remaining=$(jq -r '
-  def words(s): s | ascii_downcase | gsub("[^a-z0-9]"; " ") | split(" ") | map(select(length > 0));
-  .model.display_name as $m | (words($m)) as $mw |
-  .quota | to_entries |
-  map(. + {score: (.key | gsub("[^a-z0-9]"; " ") | split(" ") | map(. as $x | select($mw | index($x))) | length)}) |
-  sort_by(-.score) | .[0] | select(.score > 0) | .value.remaining_fraction
-' 2>/dev/null <<<"$input")
-
-if [ -n "$model_quota_remaining" ]; then
-  # Calculate used percentage: (1 - remaining_fraction) * 100
-  week_pct=$(awk -v rem="$model_quota_remaining" 'BEGIN{printf "%.1f", (1 - rem) * 100}')
-else
-  week_pct=""
+# fallback: derive from quota if rate_limits absent
+if [ -z "$five_pct" ] && [ -z "$week_pct" ]; then
+  quota_rem=$(jq -r '
+    (.quota // {}) | to_entries |
+    map(select(.value.remaining_fraction != null)) |
+    .[0].value.remaining_fraction // empty
+  ' 2>/dev/null <<<"$input")
+  if [ -n "$quota_rem" ]; then
+    week_pct=$(awk -v r="$quota_rem" 'BEGIN{printf "%.0f", (1-r)*100}')
+  fi
 fi
 
 # ── token counts (cached 60s) ────────────────────────────────
@@ -165,9 +162,9 @@ repo_part="$(printf '%b' "${C_REPO}${B}${repo}${R}")"
 [ -n "$branch" ] && repo_part="${repo_part} $(printf '%b' "${C_BRANCH}${B}${branch}${R}")"
 parts+=("$repo_part")
 
-[ -n "$ctx_pct" ] && parts+=("$(progress_bar "$ctx_pct" "5h:" "")")
+[ -n "$five_pct" ] && parts+=("$(progress_bar "$five_pct" "5h:" "")")
 [ -n "$week_pct" ] && parts+=("$(progress_bar "$week_pct" "7d:" "")")
-[ -n "$week_pct" ] && parts+=("$(progress_bar "$week_pct" "🅰:" "")")
+[ -n "$ctx_pct" ]  && parts+=("$(progress_bar "$ctx_pct"  "ctx:" "")")
 
 parts+=("$(printf '%b' "${C_TIME}$(date +%H:%M)${R}")")
 
