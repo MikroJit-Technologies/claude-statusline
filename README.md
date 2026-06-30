@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,50:1a2332,100:388bfd&height=200&section=header&text=claude-statusline&fontSize=48&fontColor=ffffff&animation=fadeIn&fontAlignY=40&desc=Statusline%20for%20Claude%20Code%20CLI&descAlignY=62&descSize=20&descColor=8b949e" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1c1917,50:2d1f17,100:cc785c&height=200&section=header&text=claude-statusline&fontSize=48&fontColor=ffffff&animation=fadeIn&fontAlignY=40&desc=Statusline%20for%20Claude%20Code%20CLI&descAlignY=62&descSize=20&descColor=e8c4a8" width="100%" />
 
 <br/>
 
@@ -109,5 +109,5 @@ Token totals (5h / 7d / all-time) are computed from `~/.claude/projects/**/*.jso
 MIT © 2026 [MikroJit Technologies](https://github.com/MikroJit-Technologies)
 
 <div align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:388bfd,100:0d1117&height=100&section=footer" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:cc785c,100:1c1917&height=100&section=footer" width="100%" />
 </div>
